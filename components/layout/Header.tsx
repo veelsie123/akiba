@@ -4,9 +4,9 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Fragment, useEffect, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, UserCircleIcon } from "@heroicons/react/24/outline";
-import NotificationBell from "@/components/notifications/NotificationBell";
-import GlobalSearch from "@/components/search/GlobalSearch";
+import { Menu as MenuIcon, UserCircle, ChartBarStacked } from "lucide-react";
+import NotificationBell from "@/app/dashboard/notifications/NotificationBell";
+import GlobalSearch from "@/app/dashboard/search/GlobalSearch";
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -27,7 +27,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
-    router.push("/login");
+    router.push("/");
   };
 
   if (!mounted) {
@@ -41,7 +41,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
               onClick={() => setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
-              <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+              <MenuIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
           <div className="flex items-center">
@@ -62,7 +62,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
-            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+            <ChartBarStacked className="h-6 w-6" aria-hidden="true" />
           </button>
           {/* Global Search */}
           <GlobalSearch />
@@ -75,7 +75,7 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
           <Menu as="div" className="relative ml-3">
             <div>
               <Menu.Button className="flex items-center text-sm focus:outline-none">
-                <UserCircleIcon className="h-8 w-8 text-gray-400" />
+                <UserCircle className="h-8 w-8 text-gray-400" />
                 <span className="ml-2 text-gray-700">{session?.user?.name}</span>
               </Menu.Button>
             </div>

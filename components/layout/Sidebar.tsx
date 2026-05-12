@@ -19,16 +19,16 @@ import {
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Clients", href: "/clients", icon: Users, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Cases", href: "/cases", icon: Briefcase, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Appointments", href: "/appointments", icon: Calendar, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Documents", href: "/documents", icon: FileText, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Billing", href: "/billing", icon: DollarSign, roles: ["ADMIN", "LAWYER"] },
-  { name: "Reports", href: "/reports", icon: BarChart, roles: ["ADMIN", "LAWYER"] },
-  { name: "Staff", href: "/staff", icon: UserCog, roles: ["ADMIN"] },
-  { name: "My Profile", href: "/profile", icon: User, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Notifications", href: "/notifications", icon: Bell, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Audit Log", href: "/audit", icon: ClipboardList, roles: ["ADMIN"] },
+  { name: "Clients", href: "/dashboard/clients", icon: Users, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Cases", href: "/dashboard/cases", icon: Briefcase, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Appointments", href: "/dashboard/appointments", icon: Calendar, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Documents", href: "/dashboard/documents", icon: FileText, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Billing", href: "/dashboard/billing", icon: DollarSign, roles: ["ADMIN", "LAWYER"] },
+  { name: "Reports", href: "/dashboard/reports", icon: BarChart, roles: ["ADMIN", "LAWYER"] },
+  { name: "Staff", href: "/dashboard/staff", icon: UserCog, roles: ["ADMIN"] },
+  { name: "My Profile", href: "/dashboard/profile", icon: User, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Notifications", href: "/dashboard/notifications", icon: Bell, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Audit Log", href: "/dashboard/audit", icon: ClipboardList, roles: ["ADMIN"] },
 ];
 
 export default function Sidebar() {

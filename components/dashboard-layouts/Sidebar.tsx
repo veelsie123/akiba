@@ -4,25 +4,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
-  HomeIcon,
-  UsersIcon,
-  BriefcaseIcon,
-  CalendarIcon,
-  DocumentTextIcon,
-  CurrencyDollarIcon,
-  ChartBarIcon,
-  UserGroupIcon,
-} from "@heroicons/react/24/outline";
+  Home,
+  Users,
+  Briefcase,
+  Calendar,
+  FileText,
+  DollarSign,
+  BarChart,
+  Users2,
+} from "lucide-react";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: HomeIcon, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Clients", href: "/clients", icon: UsersIcon, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Cases", href: "/cases", icon: BriefcaseIcon, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Appointments", href: "/appointments", icon: CalendarIcon, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Documents", href: "/documents", icon: DocumentTextIcon, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
-  { name: "Billing", href: "/billing", icon: CurrencyDollarIcon, roles: ["ADMIN", "LAWYER"] },
-  { name: "Reports", href: "/reports", icon: ChartBarIcon, roles: ["ADMIN", "LAWYER"] },
-  { name: "Staff", href: "/staff", icon: UserGroupIcon, roles: ["ADMIN"] },
+  { name: "Dashboard", href: "/dashboard", icon: Home, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Clients", href: "/dashboard/clients", icon: Users, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Cases", href: "/dashboard/cases", icon: Briefcase, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Appointments", href: "/dashboard/appointments", icon: Calendar, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Documents", href: "/dashboard/documents", icon: FileText, roles: ["ADMIN", "LAWYER", "RECEPTIONIST"] },
+  { name: "Billing", href: "/dashboard/billing", icon: DollarSign, roles: ["ADMIN", "LAWYER"] },
+  { name: "Reports", href: "/dashboard/reports", icon: BarChart, roles: ["ADMIN", "LAWYER"] },
+  { name: "Staff", href: "/dashboard/staff", icon: Users2, roles: ["ADMIN"] },
 ];
 
 export default function Sidebar() {

@@ -150,3 +150,37 @@ create index if not exists notifications_user_id_created_at_idx on public.notifi
 create index if not exists invoices_client_id_idx on public.invoices ("clientId");
 create index if not exists invoice_line_items_invoice_id_idx on public.invoice_line_items ("invoiceId");
 create index if not exists payments_invoice_id_idx on public.payments ("invoiceId");
+
+insert into public.users (name, email, password, role, position, "employeeId")
+values
+  (
+    'Admin User',
+    'admin@lawfirm.com',
+    '$2b$10$bnnX2D9v7j1owToSYrCBU.KAKO3VIsWuyCaSHTmD6LffEMcM5nloC',
+    'ADMIN',
+    'Administrator',
+    'EMP-001'
+  ),
+  (
+    'John Doe',
+    'john.doe@lawfirm.com',
+    '$2b$10$n1xST6n93nkHJvnuMvLHCOdFaqJHC4GnAmAZOpSE.iuXoZR5VVaVe',
+    'LAWYER',
+    'Lawyer',
+    'EMP-002'
+  ),
+  (
+    'Reception User',
+    'reception@lawfirm.com',
+    '$2b$10$tKmj3te9V/jJxNMJ9cU36u6mBsqFPvSX3Zfca7F1jfzOLy.iwhQ4y',
+    'RECEPTIONIST',
+    'Receptionist',
+    'EMP-003'
+  )
+on conflict (email) do update set
+  name = excluded.name,
+  password = excluded.password,
+  role = excluded.role,
+  position = excluded.position,
+  "employeeId" = excluded."employeeId",
+  "updatedAt" = now();
