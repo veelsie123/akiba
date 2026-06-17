@@ -4,6 +4,12 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabase, throwIfSupabaseError } from "@/lib/supabase/server";
 import bcrypt from "bcryptjs";
 
+// For demo purposes use lower bcrypt rounds to speed up hashing/login.
+// Override via BCRYPT_SALT_ROUNDS env var in real deployments (keep >=10 for production).
+const BCRYPT_SALT_ROUNDS = process.env.BCRYPT_SALT_ROUNDS
+  ? parseInt(process.env.BCRYPT_SALT_ROUNDS, 10)
+  : 6;
+
 type StaffRequestBody = {
   name: string;
   email: string;
@@ -37,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Hash password if provided
     let hashedPassword = undefined;
     if (body.password) {
-      hashedPassword = await bcrypt.hash(body.password, 10);
+      hashedPassword = await bcrypt.hash(body.password, BCRYPT_SALT_ROUNDS);
     }
 
     const { data: user, error } = await supabase

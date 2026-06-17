@@ -33,8 +33,9 @@ export default function ReceptionistDashboard() {
     newClientsWeek: 0,
     totalClients: 0,
   });
-  const [todaySchedule, setTodaySchedule] = useState<any[]>([]);
-  const [recentClients, setRecentClients] = useState<any[]>([]);
+  interface ActivityItem { id: string; title: string; description: string; timestamp: string; }
+  const [todaySchedule, setTodaySchedule] = useState<ActivityItem[]>([]);
+  const [recentClients, setRecentClients] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -103,14 +104,14 @@ export default function ReceptionistDashboard() {
 
       <div className="flex space-x-4">
         <Link
-          href="/clients"
+          href="/dashboard/clients"
           className="flex items-center rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
           <PlusCircle className="mr-2 h-5 w-5" />
           Add Client
         </Link>
         <Link
-          href="/appointments"
+          href="/dashboard/appointments"
           className="flex items-center rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
         >
           <Calendar className="mr-2 h-5 w-5" />

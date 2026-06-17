@@ -14,7 +14,7 @@ const clientSchema = z.object({
   lawyerId: z.string().optional(),
 });
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     if (!session) {
@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(clientsWithCounts);
   } catch (error) {
+    console.error("Error fetching clients:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

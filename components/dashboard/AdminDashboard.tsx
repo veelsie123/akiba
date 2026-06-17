@@ -22,7 +22,8 @@ export default function AdminDashboard() {
     cases: 0,
     documents: 0,
   });
-  const [recentLogs, setRecentLogs] = useState<any[]>([]);
+  interface ActivityItem { id: string; title: string; description: string; timestamp: string; }
+  const [recentLogs, setRecentLogs] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

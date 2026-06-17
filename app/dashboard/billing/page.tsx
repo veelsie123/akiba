@@ -17,20 +17,25 @@ const paymentSchema = z.object({
 
 type PaymentFormData = z.infer<typeof paymentSchema>;
 
-interface PaymentFormProps {
-  invoice: any;
-  balance: number;
+interface Invoice {
+  id?: string;
+  invoiceNumber?: string;
+  client?: { name?: string };
+  total?: number;
 }
 
-export default function PaymentForm({ invoice, balance }: PaymentFormProps) {
+interface PaymentFormProps {
+  invoice?: Invoice;
+  balance?: number;
+}
+
+export default function PaymentForm({ invoice = { invoiceNumber: '', client: { name: '' }, total: 0, id: '' }, balance = 0 }: PaymentFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
-    watch,
-    setValue,
     formState: { errors },
   } = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
@@ -74,7 +79,7 @@ export default function PaymentForm({ invoice, balance }: PaymentFormProps) {
       }
 
       toast.success("Payment recorded successfully");
-      router.push(`/billing/${invoice.id}`);
+      router.push(`/dashboard/billing/${invoice.id}`);
       router.refresh();
     } catch (error) {
       console.error("Error recording payment:", error);
@@ -91,15 +96,15 @@ export default function PaymentForm({ invoice, balance }: PaymentFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-sm text-gray-500">Invoice #</p>
-            <p className="text-lg font-semibold">{invoice.invoiceNumber}</p>
+            <p className="text-lg font-semibold">{invoice?.invoiceNumber || "-"}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Client</p>
-            <p className="text-lg font-semibold">{invoice.client.name}</p>
+            <p className="text-lg font-semibold">{invoice?.client?.name || "-"}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Total Amount</p>
-            <p className="text-lg font-semibold">{formatKES(invoice.total)}</p>
+            <p className="text-lg font-semibold">{formatKES(Number(invoice?.total || 0))}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Balance Due</p>

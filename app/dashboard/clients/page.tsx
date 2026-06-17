@@ -21,10 +21,10 @@ type ClientFormData = z.infer<typeof clientSchema>;
 interface ClientFormProps {
   initialData?: ClientFormData;
   clientId?: string;
-  lawyers: { id: string; name: string }[];
+  lawyers?: { id: string; name: string }[];
 }
 
-export default function ClientForm({ initialData, clientId, lawyers }: ClientFormProps) {
+export default function ClientForm({ initialData, clientId, lawyers = [] }: ClientFormProps) {
   const router = useRouter();
   const {
     register,
@@ -53,7 +53,7 @@ export default function ClientForm({ initialData, clientId, lawyers }: ClientFor
       }
 
       toast.success(clientId ? "Client updated successfully" : "Client created successfully");
-      router.push("/clients");
+      router.push("/dashboard/clients");
       router.refresh();
     } catch (error) {
       toast.error("Something went wrong");

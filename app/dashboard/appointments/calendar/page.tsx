@@ -128,7 +128,7 @@ export default function CalendarView({ appointments }: CalendarViewProps) {
                 {dayAppointments.slice(0, 2).map(apt => (
                   <Link
                     key={apt.id}
-                    href={`/appointments/${apt.id}`}
+                    href={`/dashboard/appointments/${apt.id}`}
                     className="block"
                   >
                     <div className={`text-xs p-1 rounded ${getStatusColor(apt.status)} truncate`}>

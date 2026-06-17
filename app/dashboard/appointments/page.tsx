@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -31,24 +31,25 @@ type AppointmentFormData = z.infer<typeof appointmentSchema>;
 interface AppointmentFormProps {
   initialData?: AppointmentFormData;
   appointmentId?: string;
-  lawyers: { id: string; name: string }[];
-  clients: { id: string; name: string }[];
-  cases: { id: string; caseNumber: string; title: string; clientId: string; client: { name: string } }[];
+  lawyers?: { id: string; name: string }[];
+  clients?: { id: string; name: string }[];
+  cases?: { id: string; caseNumber: string; title: string; clientId: string; client: { name: string } }[];
 }
 
 export default function AppointmentForm({ 
-  initialData, 
-  appointmentId, 
-  lawyers, 
-  clients, 
-  cases 
+  initialData,
+  appointmentId,
+  lawyers = [],
+  clients = [],
+  cases = [],
 }: AppointmentFormProps) {
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
-    watch,
+    control,
+    getValues,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<AppointmentFormData>({
@@ -58,8 +59,7 @@ export default function AppointmentForm({
     },
   });
 
-  const selectedClientId = watch("clientId");
-  const selectedStartTime = watch("startTime");
+  const selectedClientId = useWatch({ control, name: "clientId" }) as string | undefined;
 
   // Filter cases based on selected client
   const filteredCases = cases.filter(case_ => case_.clientId === selectedClientId);
@@ -94,7 +94,7 @@ export default function AppointmentForm({
       }
 
       toast.success(appointmentId ? "Appointment updated successfully" : "Appointment scheduled successfully");
-      router.push("/appointments");
+      router.push("/dashboard/appointments");
       router.refresh();
     } catch (error) {
       console.error("Error saving appointment:", error);
@@ -105,7 +105,7 @@ export default function AppointmentForm({
   // Generate time suggestions (9 AM to 5 PM, 30 min slots)
   const timeSlots = [];
   for (let hour = 9; hour <= 17; hour++) {
-    for (let minute of [0, 30]) {
+    for (const minute of [0, 30]) {
       if (hour === 17 && minute === 30) continue; // Skip 5:30 PM
       const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
       timeSlots.push(timeString);
@@ -222,16 +222,16 @@ export default function AppointmentForm({
             id="appointmentDate"
             onChange={(e) => {
               const date = e.target.value;
-              const currentStart = watch("startTime");
-              const currentEnd = watch("endTime");
-              
+              const currentStart = getValues("startTime");
+              const currentEnd = getValues("endTime");
+
               if (currentStart) {
                 const timePart = currentStart.split('T')[1] || "09:00";
                 setValue("startTime", `${date}T${timePart}`);
               } else {
                 setValue("startTime", `${date}T09:00`);
               }
-              
+
               if (currentEnd) {
                 const timePart = currentEnd.split('T')[1] || "10:00";
                 setValue("endTime", `${date}T${timePart}`);
@@ -252,9 +252,9 @@ export default function AppointmentForm({
             onChange={(e) => {
               const value = e.target.value;
               setValue("startTime", value);
-              
+
               // Auto-set end time to 1 hour later if not set
-              const currentEnd = watch("endTime");
+              const currentEnd = getValues("endTime");
               if (!currentEnd) {
                 const startDate = new Date(value);
                 const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
@@ -265,7 +265,7 @@ export default function AppointmentForm({
           >
             <option value="">Select time</option>
             {timeSlots.map((time) => {
-              const dateValue = watch("startTime")?.split('T')[0] || today;
+              const dateValue = useWatch({ control, name: "startTime" })?.split('T')[0] || today;
               const fullDateTime = `${dateValue}T${time}`;
               return (
                 <option key={`start-${time}`} value={fullDateTime}>
@@ -287,7 +287,7 @@ export default function AppointmentForm({
           >
             <option value="">Select time</option>
             {timeSlots.map((time) => {
-              const dateValue = watch("endTime")?.split('T')[0] || watch("startTime")?.split('T')[0] || today;
+              const dateValue = useWatch({ control, name: "endTime" })?.split('T')[0] || useWatch({ control, name: "startTime" })?.split('T')[0] || today;
               const fullDateTime = `${dateValue}T${time}`;
               return (
                 <option key={`end-${time}`} value={fullDateTime}>

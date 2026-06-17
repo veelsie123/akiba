@@ -22,6 +22,8 @@ export default function Header({ setSidebarOpen }: HeaderProps) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // setMounted is intentionally called here after mount to avoid SSR hydration mismatch
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

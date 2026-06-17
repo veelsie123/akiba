@@ -22,11 +22,11 @@ type CaseFormData = z.infer<typeof caseSchema>;
 interface CaseFormProps {
   initialData?: CaseFormData;
   caseId?: string;
-  lawyers: { id: string; name: string }[];
-  clients: { id: string; name: string }[];
+  lawyers?: { id: string; name: string }[];
+  clients?: { id: string; name: string }[];
 }
 
-export default function CaseForm({ initialData, caseId, lawyers, clients }: CaseFormProps) {
+export default function CaseForm({ initialData, caseId, lawyers = [], clients = [] }: CaseFormProps) {
   const router = useRouter();
   const {
     register,
@@ -76,7 +76,7 @@ export default function CaseForm({ initialData, caseId, lawyers, clients }: Case
       }
 
       toast.success(caseId ? "Case updated successfully" : "Case created successfully");
-      router.push("/cases");
+      router.push("/dashboard/cases");
       router.refresh();
     } catch (error) {
       console.error("Error details:", error);

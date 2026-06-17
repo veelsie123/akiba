@@ -3,7 +3,7 @@ import type { Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
-import { supabase, throwIfSupabaseError } from "@/lib/supabase/server";
+import { supabase } from "@/lib/supabase/server";
 
 export const authOptions = {
   session: {
@@ -20,35 +20,46 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
+
+          const { data: user, error } = await supabase
+            .from("users")
+            .select("id,email,name,password,role")
+            .eq("email", credentials.email)
+            .maybeSingle();
+
+          if (error) {
+            // Log internal Supabase error for diagnostics, but do not throw to avoid noisy stack traces during demo
+            console.error("Supabase query error (authorize):", error);
+            return null;
+          }
+
+          if (!user) {
+            return null;
+          }
+
+          const isPasswordValid = await compare(credentials.password, user.password);
+
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
+        } catch (err) {
+          // Log server-side for diagnostics but do not expose details to client
+          console.error("Authorize error:", err);
           return null;
         }
-
-        const { data: user, error } = await supabase
-          .from("users")
-          .select("id,email,name,password,role")
-          .eq("email", credentials.email)
-          .maybeSingle();
-
-        throwIfSupabaseError(error);
-
-        if (!user) {
-          return null;
-        }
-
-        const isPasswordValid = await compare(credentials.password, user.password);
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
       },
+
     }),
   ],
   callbacks: {

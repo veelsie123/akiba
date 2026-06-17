@@ -18,10 +18,14 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Keep a ticking "now" to compute relative times without calling Date.now() directly in render
+  const [now, setNow] = useState<number>(0);
+
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    // initialize 'now' asynchronously to avoid impure calls during render
+    const t = setTimeout(() => setNow(Date.now()), 0);
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => { clearTimeout(t); clearInterval(interval); };
   }, []);
 
   const fetchNotifications = async () => {
@@ -34,6 +38,36 @@ export default function NotificationBell() {
       console.error("Error fetching notifications:", error);
     }
   };
+
+  useEffect(() => {
+    // call asynchronously to avoid calling setState synchronously inside effect
+    const t = setTimeout(() => fetchNotifications(), 0);
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => { clearTimeout(t); clearInterval(interval); };
+  }, []);
+
+n  useEffect(() => {
+    // initialize 'now' asynchronously to avoid impure calls during render
+    const t = setTimeout(() => setNow(Date.now()), 0);
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => { clearTimeout(t); clearInterval(interval); };
+  }, []);
+n  const fetchNotifications = async () => {
+    try {
+      const response = await fetch("/api/notifications");
+      const data = await response.json();
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount || 0);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+n  useEffect(() => {
+    // call asynchronously to avoid calling setState synchronously inside effect
+    const t = setTimeout(() => fetchNotifications(), 0);
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => { clearTimeout(t); clearInterval(interval); };
+  }, []);
 
   const markAsRead = async (notificationId: string) => {
     try {
@@ -64,7 +98,7 @@ export default function NotificationBell() {
   };
 
   const formatTime = (date: string) => {
-    const diff = Date.now() - new Date(date).getTime();
+    const diff = now - new Date(date).getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -123,7 +157,7 @@ export default function NotificationBell() {
           </div>
           <div className="border-t border-gray-200 p-2">
             <Link
-              href="/notifications"
+              href="/dashboard/notifications"
               className="block text-center text-sm text-indigo-600 hover:text-indigo-800"
               onClick={() => setIsOpen(false)}
             >

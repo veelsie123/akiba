@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -25,6 +26,7 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
+        // Show generic message to avoid leaking details
         toast.error("Invalid email or password");
       } else {
         toast.success("Logged in successfully");
@@ -32,7 +34,8 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (error) {
-      toast.error("Something went wrong");
+      console.error("Login error:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -67,21 +70,29 @@ export default function LoginPage() {
                 placeholder="Email address"
               />
             </div>
-            <div>
+            <div className="relative">
               <label htmlFor="password" className="sr-only">
                 Password
               </label>
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="relative block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                className="relative block w-full rounded-md border-0 py-1.5 pr-12 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                 placeholder="Password"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute inset-y-0 right-2 flex items-center rounded px-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
             </div>
           </div>
 

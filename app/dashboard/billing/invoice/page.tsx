@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -48,7 +48,7 @@ export default function InvoiceForm({
     register,
     control,
     handleSubmit,
-    watch,
+    getValues,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<InvoiceFormData>({
@@ -65,8 +65,8 @@ export default function InvoiceForm({
     name: "lineItems",
   });
 
-  const lineItems = watch("lineItems");
-  const taxRate = watch("tax") || 0;
+  const lineItems = useWatch({ control, name: "lineItems" }) || [];
+  const taxRate = useWatch({ control, name: "tax" }) || 0;
 
   // Calculate subtotal
   const subtotal = lineItems.reduce((sum, item) => {
@@ -91,8 +91,9 @@ export default function InvoiceForm({
 
   // Update line item amount when quantity or rate changes
   const updateLineItemAmount = (index: number) => {
-    const quantity = watch(`lineItems.${index}.quantity`) || 0;
-    const rate = watch(`lineItems.${index}.rate`) || 0;
+    const item = getValues(`lineItems.${index}`) as any;
+    const quantity = item?.quantity || 0;
+    const rate = item?.rate || 0;
     setValue(`lineItems.${index}.amount`, quantity * rate);
   };
 
@@ -140,7 +141,7 @@ export default function InvoiceForm({
       }
 
       toast.success(invoiceId ? "Invoice updated successfully" : "Invoice created successfully");
-      router.push("/billing");
+      router.push("/dashboard/billing");
       router.refresh();
     } catch (error) {
       console.error("Error saving invoice:", error);

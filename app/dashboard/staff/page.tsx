@@ -4,8 +4,30 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
+interface Staff {
+  name?: string;
+  email?: string;
+  role?: string;
+  phone?: string;
+  address?: string;
+  employeeId?: string;
+  position?: string;
+  department?: string;
+  employmentType?: string;
+  employmentStatus?: string;
+  hireDate?: string;
+  age?: string | number;
+  idNumber?: string;
+  emergencyContact?: string;
+  emergencyPhone?: string;
+  salary?: string | number;
+  bankName?: string;
+  bankAccount?: string | number;
+  notes?: string;
+}
+
 interface StaffFormProps {
-  staff?: any;
+  staff?: Staff;
   staffId?: string;
 }
 
@@ -54,7 +76,7 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
 
     try {
       // Prepare data for submission - convert empty strings to null for the API
-      const submitData: any = {};
+      const submitData: Record<string, unknown> = {};
       
       for (const [key, value] of Object.entries(formData)) {
         if (value !== "" && value !== null && value !== undefined) {
@@ -98,12 +120,12 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
       
       // Redirect to staff list after 1 second
       setTimeout(() => {
-        router.push("/staff");
+        router.push("/dashboard/staff");
         router.refresh();
       }, 1000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving staff:", error);
-      toast.error(error.message);
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
@@ -114,7 +136,7 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
       {/* Basic Information */}
       <div className="border-b border-gray-200 pb-4">
         <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
-        <p className="text-sm text-gray-500">Staff member's basic details</p>
+        <p className="text-sm text-gray-500">Basic staff details</p>
       </div>
       
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

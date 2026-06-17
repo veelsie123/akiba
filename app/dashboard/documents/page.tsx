@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import toast from "react-hot-toast";
@@ -17,11 +17,11 @@ const documentSchema = z.object({
 type DocumentFormData = z.infer<typeof documentSchema>;
 
 interface DocumentUploadProps {
-  cases: { id: string; caseNumber: string; title: string; client: { name: string } }[];
-  clients: { id: string; name: string }[];
+  cases?: { id: string; caseNumber: string; title: string; client: { name: string } }[];
+  clients?: { id: string; name: string }[];
 }
 
-export default function DocumentUpload({ cases, clients }: DocumentUploadProps) {
+export default function DocumentUpload({ cases = [], clients = [] }: DocumentUploadProps) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -29,14 +29,15 @@ export default function DocumentUpload({ cases, clients }: DocumentUploadProps) 
   const {
     register,
     handleSubmit,
-    watch,
+    control,
+    getValues,
     formState: { errors },
   } = useForm<DocumentFormData>({
     resolver: zodResolver(documentSchema),
   });
 
-  const selectedCase = watch("caseId");
-  const selectedClient = watch("clientId");
+  const selectedCase = useWatch({ control, name: "caseId" }) as string | undefined;
+  const selectedClient = useWatch({ control, name: "clientId" }) as string | undefined;
 
   // Filter cases if client is selected
   const filteredCases = selectedClient
@@ -76,7 +77,7 @@ export default function DocumentUpload({ cases, clients }: DocumentUploadProps) 
       }
 
       toast.success("Document uploaded successfully");
-      router.push("/documents");
+      router.push("/dashboard/documents");
       router.refresh();
     } catch (error) {
       console.error("Error uploading document:", error);

@@ -33,8 +33,9 @@ export default function LawyerDashboard() {
     closedCases: 0,
     pendingDocuments: 0,
   });
-  const [recentCases, setRecentCases] = useState<any[]>([]);
-  const [appointments, setAppointments] = useState<any[]>([]);
+  interface ActivityItem { id: string; title: string; description: string; timestamp: string; }
+  const [recentCases, setRecentCases] = useState<ActivityItem[]>([]);
+  const [appointments, setAppointments] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
