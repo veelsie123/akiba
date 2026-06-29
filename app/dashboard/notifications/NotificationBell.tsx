@@ -18,69 +18,47 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Keep a ticking "now" to compute relative times without calling Date.now() directly in render
-  const [now, setNow] = useState<number>(0);
+// Keep a ticking "now" to compute relative times without calling Date.now() directly in render
+   const [now, setNow] = useState<number>(0);
 
-  useEffect(() => {
-    // initialize 'now' asynchronously to avoid impure calls during render
-    const t = setTimeout(() => setNow(Date.now()), 0);
-    const interval = setInterval(() => setNow(Date.now()), 60000);
-    return () => { clearTimeout(t); clearInterval(interval); };
-  }, []);
+   useEffect(() => {
+     // initialize 'now' asynchronously to avoid impure calls during render
+     const t = setTimeout(() => setNow(Date.now()), 0);
+     const interval = setInterval(() => setNow(Date.now()), 60000);
+     return () => { clearTimeout(t); clearInterval(interval); };
+   }, []);
 
-  const fetchNotifications = async () => {
-    try {
-      const response = await fetch("/api/notifications");
-      const data = await response.json();
-      setNotifications(data.notifications || []);
-      setUnreadCount(data.unreadCount || 0);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
+   const fetchNotifications = async () => {
+     try {
+       const response = await fetch("/api/notifications");
+       const data = await response.json();
+       setNotifications(data.notifications || []);
+       setUnreadCount(data.unreadCount || 0);
+     } catch (error) {
+       console.error("Error fetching notifications:", error);
+     }
+   };
 
-  useEffect(() => {
-    // call asynchronously to avoid calling setState synchronously inside effect
-    const t = setTimeout(() => fetchNotifications(), 0);
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => { clearTimeout(t); clearInterval(interval); };
-  }, []);
+   useEffect(() => {
+     // call asynchronously to avoid calling setState synchronously inside effect
+     const t = setTimeout(() => fetchNotifications(), 0);
+     const interval = setInterval(fetchNotifications, 30000);
+     return () => { clearTimeout(t); clearInterval(interval); };
+   }, []);
 
-n  useEffect(() => {
-    // initialize 'now' asynchronously to avoid impure calls during render
-    const t = setTimeout(() => setNow(Date.now()), 0);
-    const interval = setInterval(() => setNow(Date.now()), 60000);
-    return () => { clearTimeout(t); clearInterval(interval); };
-  }, []);
-n  const fetchNotifications = async () => {
-    try {
-      const response = await fetch("/api/notifications");
-      const data = await response.json();
-      setNotifications(data.notifications || []);
-      setUnreadCount(data.unreadCount || 0);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    }
-  };
-n  useEffect(() => {
-    // call asynchronously to avoid calling setState synchronously inside effect
-    const t = setTimeout(() => fetchNotifications(), 0);
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => { clearTimeout(t); clearInterval(interval); };
-  }, []);
 
-  const markAsRead = async (notificationId: string) => {
-    try {
-      await fetch("/api/notifications", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notificationId }),
-      });
-      fetchNotifications();
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  };
+   const markAsRead = async (notificationId: string) => {
+     try {
+       await fetch("/api/notifications", {
+         method: "PUT",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ notificationId }),
+       });
+       fetchNotifications();
+     } catch (error) {
+       console.error("Error marking notification as read:", error);
+     }
+   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

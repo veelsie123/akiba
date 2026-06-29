@@ -26,12 +26,11 @@ interface Appointment {
 }
 
 export default function LawyerDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [stats, setStats] = useState({
     myCases: 0,
     upcomingAppointments: 0,
     closedCases: 0,
-    pendingDocuments: 0,
   });
   interface ActivityItem { id: string; title: string; description: string; timestamp: string; }
   const [recentCases, setRecentCases] = useState<ActivityItem[]>([]);
@@ -39,22 +38,25 @@ export default function LawyerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
+    if (status === "loading") return;
+    if (!session?.user?.id) {
+      setIsLoading(false);
+      return;
+    }
 
     async function fetchLawyerData() {
       try {
         const [myCasesCount, closedCasesCount, recentCasesData, appointmentsData] = await Promise.all([
-          supabase.from("cases").select("*", { count: "exact", head: true }).eq("lawyerId", session.user.id),
-          supabase.from("cases").select("*", { count: "exact", head: true }).eq("lawyerId", session.user.id).eq("status", "CLOSED"),
-          supabase.from("cases").select("*").eq("lawyerId", session.user.id).order("createdAt", { ascending: false }).limit(5),
-          supabase.from("appointments").select("*, client:clients(name)").eq("lawyerId", session.user.id).gte("startTime", new Date().toISOString()).order("startTime", { ascending: true }).limit(5),
+          supabase.from("cases").select("*", { count: "exact", head: true }).eq("lawyerId", session!.user.id),
+          supabase.from("cases").select("*", { count: "exact", head: true }).eq("lawyerId", session!.user.id).eq("status", "CLOSED"),
+          supabase.from("cases").select("*").eq("lawyerId", session!.user.id).order("createdAt", { ascending: false }).limit(5),
+          supabase.from("appointments").select("*, client:clients(name)").eq("lawyerId", session!.user.id).gte("startTime", new Date().toISOString()).order("startTime", { ascending: true }).limit(5),
         ]);
 
         setStats({
           myCases: myCasesCount.count || 0,
           closedCases: closedCasesCount.count || 0,
           upcomingAppointments: appointmentsData.data?.length || 0,
-          pendingDocuments: 0, // Placeholder
         });
 
         setRecentCases(
@@ -82,7 +84,7 @@ export default function LawyerDashboard() {
     }
 
     fetchLawyerData();
-  }, [session]);
+  }, [session, status]);
 
   if (isLoading) {
     return <div className="animate-pulse">Loading Legal Dashboard...</div>;
@@ -94,7 +96,7 @@ export default function LawyerDashboard() {
         <StatCard title="My Active Cases" value={stats.myCases} icon={Briefcase} />
         <StatCard title="Closed Cases" value={stats.closedCases} icon={CheckCircle} />
         <StatCard title="Upcoming Meetings" value={stats.upcomingAppointments} icon={Calendar} />
-        <StatCard title="Hours Logged" value="124" icon={Clock} />
+        <StatCard title="Hours Logged" value="—" icon={Clock} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
