@@ -28,6 +28,12 @@ type StaffRequestBody = {
   bankName?: string;
   employmentStatus?: "ACTIVE" | "INACTIVE" | "TERMINATED";
   employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACT";
+  specialization?: string;
+  experience?: string;
+  barNumber?: string;
+  bio?: string;
+  availability?: string;
+  notes?: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -66,6 +72,12 @@ export async function POST(request: NextRequest) {
         bankName: body.bankName || null,
         employmentStatus: body.employmentStatus || "ACTIVE",
         employmentType: body.employmentType || "FULL_TIME",
+        specialization: body.specialization || null,
+        experience: body.experience || null,
+        barNumber: body.barNumber || null,
+        bio: body.bio || null,
+        availability: body.availability || null,
+        notes: body.notes || null,
       })
       .select()
       .single();
@@ -82,21 +94,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    const role = session?.user?.role;
+    if (!session || !role || !["ADMIN", "LAWYER", "RECEPTIONIST"].includes(role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { data: users, error } = await supabase
+    const roleFilter = request.nextUrl.searchParams.get("role");
+
+    let { data: users, error } = await supabase
       .from("users")
-      .select("*")
-      .order("createdAt", { ascending: false });
+      .select("id,name,email,role")
+      .limit(200);
 
-    throwIfSupabaseError(error);
+    if (error) {
+      const fallback = await supabase.from("users").select("id,name,email,role");
+      users = fallback.data ?? [];
+      error = fallback.error;
+    }
 
-    return NextResponse.json(users);
+    if (error) {
+      throwIfSupabaseError(error);
+    }
+
+    const filteredUsers = roleFilter
+      ? (users ?? []).filter((user: { role?: string }) => user.role === roleFilter)
+      : users ?? [];
+
+    return NextResponse.json(filteredUsers);
   } catch (error: unknown) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Internal Server Error" },

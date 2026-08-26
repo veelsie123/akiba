@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { Briefcase, Calendar, Clock, CheckCircle } from "lucide-react";
 import StatCard from "./StatCard";
 import RecentActivity from "./RecentActivity";
-import { supabase } from "@/lib/supabase/server";
 
 interface Case {
   id: string;
@@ -26,7 +24,6 @@ interface Appointment {
 }
 
 export default function LawyerDashboard() {
-  const { data: session } = useSession();
   const [stats, setStats] = useState({
     myCases: 0,
     upcomingAppointments: 0,
@@ -39,26 +36,24 @@ export default function LawyerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
-
     async function fetchLawyerData() {
       try {
-        const [myCasesCount, closedCasesCount, recentCasesData, appointmentsData] = await Promise.all([
-          supabase.from("cases").select("*", { count: "exact", head: true }).eq("lawyerId", session.user.id),
-          supabase.from("cases").select("*", { count: "exact", head: true }).eq("lawyerId", session.user.id).eq("status", "CLOSED"),
-          supabase.from("cases").select("*").eq("lawyerId", session.user.id).order("createdAt", { ascending: false }).limit(5),
-          supabase.from("appointments").select("*, client:clients(name)").eq("lawyerId", session.user.id).gte("startTime", new Date().toISOString()).order("startTime", { ascending: true }).limit(5),
-        ]);
+        const response = await fetch("/api/dashboard");
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed to load dashboard data");
+        }
 
         setStats({
-          myCases: myCasesCount.count || 0,
-          closedCases: closedCasesCount.count || 0,
-          upcomingAppointments: appointmentsData.data?.length || 0,
-          pendingDocuments: 0, // Placeholder
+          myCases: payload.stats?.myCases || 0,
+          closedCases: payload.stats?.closedCases || 0,
+          upcomingAppointments: payload.stats?.upcomingAppointments || 0,
+          pendingDocuments: payload.stats?.pendingDocuments || 0,
         });
 
         setRecentCases(
-          (recentCasesData.data || []).map((c: Case) => ({
+          (payload.recentCases || []).map((c: Case) => ({
             id: c.id,
             title: c.title,
             description: `Status: ${c.status} | Number: ${c.caseNumber}`,
@@ -67,7 +62,7 @@ export default function LawyerDashboard() {
         );
 
         setAppointments(
-          (appointmentsData.data || []).map((a: Appointment) => ({
+          (payload.appointments || []).map((a: Appointment) => ({
             id: a.id,
             title: a.title,
             description: `Meeting with ${a.client?.name} (${a.type})`,
@@ -82,7 +77,7 @@ export default function LawyerDashboard() {
     }
 
     fetchLawyerData();
-  }, [session]);
+  }, []);
 
   if (isLoading) {
     return <div className="animate-pulse">Loading Legal Dashboard...</div>;

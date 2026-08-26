@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff, Scale, ShieldCheck, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
@@ -26,7 +27,6 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        // Show generic message to avoid leaking details
         toast.error("Invalid email or password");
       } else {
         toast.success("Logged in successfully");
@@ -42,77 +42,98 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Law Firm Management System
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
-          </p>
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.25),transparent_40%),linear-gradient(135deg,#f8fafc_0%,#eef2ff_100%)] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="grid w-full max-w-6xl overflow-hidden rounded-[32px] border border-slate-200 bg-white/80 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.45)] backdrop-blur xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="relative hidden overflow-hidden bg-slate-950 p-10 text-white xl:flex xl:flex-col xl:justify-between">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(129,140,248,0.3),transparent_45%)]" />
+          <div className="relative">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/20 text-indigo-300">
+              <Scale className="h-6 w-6" />
+            </div>
+            <h1 className="mt-8 text-3xl font-semibold tracking-tight">Modern legal operations in one place.</h1>
+            <p className="mt-4 max-w-md text-sm leading-6 text-slate-300">
+              Manage clients, cases, documents, and daily operations with clarity and speed.
+            </p>
+          </div>
+
+          <div className="relative space-y-4 rounded-2xl border border-white/10 bg-white/10 p-5">
+            <div className="flex items-center gap-3 text-sm text-slate-200">
+              <ShieldCheck className="h-5 w-5 text-indigo-300" />
+              Secure access for your entire firm
+            </div>
+            <div className="flex items-center gap-3 text-sm text-slate-200">
+              <Sparkles className="h-5 w-5 text-indigo-300" />
+              Faster handoffs and fewer admin bottlenecks
+            </div>
+          </div>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4 rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="relative block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Email address"
-              />
-            </div>
-            <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="relative block w-full rounded-md border-0 py-1.5 pr-12 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                placeholder="Password"
-              />
+
+        <div className="p-8 sm:p-10 lg:p-12">
+          <div className="mx-auto max-w-md">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Welcome back</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Sign in to your workspace</h2>
+            <p className="mt-2 text-sm text-slate-500">Access your practice dashboard and continue where you left off.</p>
+
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">Email</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                  placeholder="you@lawfirm.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-700">Password</label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+                    placeholder="Enter password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute inset-y-0 right-2 flex items-center rounded-xl px-2 text-slate-500 hover:text-slate-700"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
               <button
-                type="button"
-                onClick={() => setShowPassword((s) => !s)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute inset-y-0 right-2 flex items-center rounded px-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                type="submit"
+                disabled={isLoading}
+                className="flex w-full justify-center rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {showPassword ? "Hide" : "Show"}
+                {isLoading ? "Signing in..." : "Sign in"}
               </button>
+            </form>
+
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+              <p className="font-medium text-slate-700">Demo credentials</p>
+              <div className="mt-2 space-y-1">
+                <p>Admin: admin@lawfirm.com / admin123</p>
+                <p>Lawyer: john.doe@lawfirm.com / lawyer123</p>
+                <p>Receptionist: reception@lawfirm.com / reception123</p>
+              </div>
             </div>
           </div>
-
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50"
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
-
-          <div className="text-sm text-center text-gray-600">
-            <p>Demo credentials:</p>
-            <p>Admin: admin@lawfirm.com / admin123</p>
-            <p>Lawyer: john.doe@lawfirm.com / lawyer123</p>
-            <p>Receptionist: reception@lawfirm.com / reception123</p>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

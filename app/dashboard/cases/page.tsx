@@ -64,7 +64,7 @@ export default function CaseForm({ initialData, caseId, lawyers = [], clients = 
             ? responseData.error 
             : JSON.stringify(responseData.error);
         }
-      } catch (e) {
+      } catch {
         // If response is not JSON, get text
         const text = await response.text();
         console.log("Response text:", text);

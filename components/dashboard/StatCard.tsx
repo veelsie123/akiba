@@ -31,31 +31,27 @@ export default function StatCard({ title, value, icon: Icon, trend, className = 
   return (
     <div
       ref={cardRef}
-      className={`overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 ${className}`}
+      className={`group rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.45)] backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_18px_45px_-20px_rgba(15,23,42,0.5)] ${className}`}
     >
-      <div className="flex items-center">
-        <div className="rounded-md bg-indigo-50 p-3">
-          <Icon className="h-6 w-6 text-indigo-600" aria-hidden="true" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="rounded-2xl bg-indigo-50 p-3 text-indigo-600">
+          <Icon className="h-6 w-6" aria-hidden="true" />
         </div>
-        <div className="ml-5 w-0 flex-1">
-          <dl>
-            <dt className="truncate text-sm font-medium text-gray-500">{title}</dt>
-            <dd className="flex items-baseline">
-              <div className="text-2xl font-semibold text-gray-900">{value}</div>
-              {trend && (
-                <div
-                  className={`ml-2 flex items-baseline text-sm font-semibold ${
-                    trend.isUp ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {trend.isUp ? "↑" : "↓"}
-                  <span className="sr-only">{trend.isUp ? "Increased" : "Decreased"} by</span>
-                  {trend.value}
-                </div>
-              )}
-            </dd>
-          </dl>
-        </div>
+        {trend && (
+          <div
+            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+              trend.isUp ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+            }`}
+          >
+            {trend.isUp ? "↑" : "↓"}
+            {trend.value}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6">
+        <p className="truncate text-sm font-medium text-slate-500">{title}</p>
+        <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
       </div>
     </div>
   );

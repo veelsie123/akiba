@@ -5,7 +5,9 @@ import { BarChart, TrendingUp, Users, Briefcase, DollarSign } from "lucide-react
 
 export default async function ReportsPage() {
   const session = await getServerSession(authOptions);
-  if (!session || !["ADMIN", "LAWYER"].includes(session.user.role)) {
+  const role = session?.user?.role;
+
+  if (!session || !role || !["ADMIN", "LAWYER"].includes(role)) {
     redirect("/dashboard");
   }
 

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Calendar, Users, PlusCircle } from "lucide-react";
 import StatCard from "./StatCard";
 import RecentActivity from "./RecentActivity";
-import { supabase } from "@/lib/supabase/server";
 import Link from "next/link";
 
 interface Appointment {
@@ -40,31 +39,22 @@ export default function ReceptionistDashboard() {
 
   useEffect(() => {
     async function fetchReceptionistData() {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-
       try {
-        const [todayAppts, newClients, totalClients, appointmentsData, recentClientsData] = await Promise.all([
-          supabase.from("appointments").select("*", { count: "exact", head: true }).gte("startTime", today.toISOString()).lt("startTime", tomorrow.toISOString()),
-          supabase.from("clients").select("*", { count: "exact", head: true }).gte("createdAt", weekAgo.toISOString()),
-          supabase.from("clients").select("*", { count: "exact", head: true }),
-          supabase.from("appointments").select("*, client:clients(name), lawyer:users(name)").gte("startTime", today.toISOString()).lt("startTime", tomorrow.toISOString()).order("startTime", { ascending: true }),
-          supabase.from("clients").select("*").order("createdAt", { ascending: false }).limit(5),
-        ]);
+        const response = await fetch("/api/dashboard");
+        const payload = await response.json();
+
+        if (!response.ok) {
+          throw new Error(payload.error || "Failed to load dashboard data");
+        }
 
         setStats({
-          todayAppointments: todayAppts.count || 0,
-          newClientsWeek: newClients.count || 0,
-          totalClients: totalClients.count || 0,
+          todayAppointments: payload.stats?.todayAppointments || 0,
+          newClientsWeek: payload.stats?.newClientsWeek || 0,
+          totalClients: payload.stats?.totalClients || 0,
         });
 
         setTodaySchedule(
-          (appointmentsData.data || []).map((a: Appointment) => ({
+          (payload.todaySchedule || []).map((a: Appointment) => ({
             id: a.id,
             title: a.title,
             description: `Client: ${a.client?.name} | Lawyer: ${a.lawyer?.name}`,
@@ -73,7 +63,7 @@ export default function ReceptionistDashboard() {
         );
 
         setRecentClients(
-          (recentClientsData.data || []).map((c: Client) => ({
+          (payload.recentClients || []).map((c: Client) => ({
             id: c.id,
             title: c.name,
             description: `Email: ${c.email} | Phone: ${c.phone}`,

@@ -20,11 +20,12 @@ const invoiceSchema = z.object({
   caseId: z.string().optional(),
   dueDate: z.string().min(1, "Due date is required"),
   description: z.string().optional(),
-  tax: z.number().default(0),
+  tax: z.number(),
   lineItems: z.array(lineItemSchema).min(1, "At least one line item is required"),
 });
 
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
+type InvoiceLineItem = z.infer<typeof lineItemSchema>;
 
 interface InvoiceFormProps {
   initialData?: InvoiceFormData;
@@ -91,7 +92,7 @@ export default function InvoiceForm({
 
   // Update line item amount when quantity or rate changes
   const updateLineItemAmount = (index: number) => {
-    const item = getValues(`lineItems.${index}`) as any;
+    const item = getValues(`lineItems.${index}`) as InvoiceLineItem | undefined;
     const quantity = item?.quantity || 0;
     const rate = item?.rate || 0;
     setValue(`lineItems.${index}.amount`, quantity * rate);

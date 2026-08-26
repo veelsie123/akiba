@@ -15,7 +15,7 @@ const appointmentSchema = z.object({
   clientId: z.string().min(1, "Client is required"),
   lawyerId: z.string().min(1, "Lawyer is required"),
   caseId: z.string().optional(),
-  status: z.enum(["SCHEDULED", "CONFIRMED", "CANCELLED", "COMPLETED"]).default("SCHEDULED"),
+  status: z.enum(["SCHEDULED", "CONFIRMED", "CANCELLED", "COMPLETED"]),
 }).refine((data) => {
   if (!data.startTime || !data.endTime) return true;
   const start = new Date(data.startTime);
@@ -60,6 +60,8 @@ export default function AppointmentForm({
   });
 
   const selectedClientId = useWatch({ control, name: "clientId" }) as string | undefined;
+  const startTimeValue = useWatch({ control, name: "startTime" }) as string | undefined;
+  const endTimeValue = useWatch({ control, name: "endTime" }) as string | undefined;
 
   // Filter cases based on selected client
   const filteredCases = cases.filter(case_ => case_.clientId === selectedClientId);
@@ -265,7 +267,7 @@ export default function AppointmentForm({
           >
             <option value="">Select time</option>
             {timeSlots.map((time) => {
-              const dateValue = useWatch({ control, name: "startTime" })?.split('T')[0] || today;
+              const dateValue = startTimeValue?.split('T')[0] || today;
               const fullDateTime = `${dateValue}T${time}`;
               return (
                 <option key={`start-${time}`} value={fullDateTime}>
@@ -287,7 +289,7 @@ export default function AppointmentForm({
           >
             <option value="">Select time</option>
             {timeSlots.map((time) => {
-              const dateValue = useWatch({ control, name: "endTime" })?.split('T')[0] || useWatch({ control, name: "startTime" })?.split('T')[0] || today;
+              const dateValue = endTimeValue?.split('T')[0] || startTimeValue?.split('T')[0] || today;
               const fullDateTime = `${dateValue}T${time}`;
               return (
                 <option key={`end-${time}`} value={fullDateTime}>

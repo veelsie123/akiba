@@ -30,13 +30,11 @@ export default function DocumentUpload({ cases = [], clients = [] }: DocumentUpl
     register,
     handleSubmit,
     control,
-    getValues,
     formState: { errors },
   } = useForm<DocumentFormData>({
     resolver: zodResolver(documentSchema),
   });
 
-  const selectedCase = useWatch({ control, name: "caseId" }) as string | undefined;
   const selectedClient = useWatch({ control, name: "clientId" }) as string | undefined;
 
   // Filter cases if client is selected

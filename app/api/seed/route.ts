@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
 import bcrypt from "bcryptjs";
 
@@ -27,7 +27,10 @@ export async function POST() {
     // Insert users (upsert by email to be idempotent)
     const { data: createdUsers, error: usersError } = await supabase
       .from("users")
-      .upsert(users.map(u => ({ email: u.email, name: u.name, password: u.password, role: u.role })), { onConflict: ["email"] })
+      .upsert(
+        users.map((u) => ({ email: u.email, name: u.name, password: u.password, role: u.role })),
+        { onConflict: "email" }
+      )
       .select("id,email,name,role");
 
     if (usersError) {
@@ -47,7 +50,7 @@ export async function POST() {
 
     const { data: createdClients, error: clientsError } = await supabase
       .from("clients")
-      .upsert(clients, { onConflict: ["email"] })
+      .upsert(clients, { onConflict: "email" })
       .select("id,email,name");
 
     if (clientsError) {
@@ -65,7 +68,7 @@ export async function POST() {
       { caseNumber: "JS-2026-01", title: "Estate Planning", description: "Will and trust", status: "PENDING", type: "Family", clientId: clientMap["jane.smith@example.com"]?.id || null, lawyerId: userMap["john.doe@lawfirm.com"]?.id || null },
     ];
 
-    const { data: createdCases, error: casesError } = await supabase.from("cases").upsert(cases, { onConflict: ["caseNumber"] }).select("id,caseNumber");
+    const { data: createdCases, error: casesError } = await supabase.from("cases").upsert(cases, { onConflict: "caseNumber" }).select("id,caseNumber");
     if (casesError) {
       console.error("Cases insert error:", casesError);
       return NextResponse.json({ error: "Failed to insert cases" }, { status: 500 });
@@ -94,7 +97,7 @@ export async function POST() {
       { invoiceNumber: "INV-1001", clientId: clientMap["client1@acme.com"]?.id || null, total: 50000, status: "UNPAID" },
     ];
 
-    const { error: invoicesError } = await supabase.from("invoices").upsert(invoices, { onConflict: ["invoiceNumber"] }).select("id,invoiceNumber");
+    const { error: invoicesError } = await supabase.from("invoices").upsert(invoices, { onConflict: "invoiceNumber" }).select("id,invoiceNumber");
     if (invoicesError) {
       console.error("Invoices insert error:", invoicesError);
     }

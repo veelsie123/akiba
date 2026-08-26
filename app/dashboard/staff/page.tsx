@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -34,6 +34,8 @@ interface StaffFormProps {
 export default function StaffForm({ staff, staffId }: StaffFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [staffMembers, setStaffMembers] = useState<Staff[]>([]);
+  const [isLoadingStaff, setIsLoadingStaff] = useState(true);
   
   // Helper function to format date for input field
   const formatDateForInput = (date: string | Date | null | undefined) => {
@@ -66,6 +68,29 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
     notes: staff?.notes || "",
   });
 
+  useEffect(() => {
+    const loadStaff = async () => {
+      try {
+        setIsLoadingStaff(true);
+        const response = await fetch("/api/users");
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to load staff");
+        }
+
+        setStaffMembers(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error loading staff:", error);
+        toast.error(error instanceof Error ? error.message : "Unable to load staff");
+      } finally {
+        setIsLoadingStaff(false);
+      }
+    };
+
+    loadStaff();
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -86,7 +111,7 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
           }
           // Handle numeric fields
           else if (key === "salary" || key === "age") {
-            submitData[key] = value ? parseFloat(value) : null;
+            submitData[key] = value !== "" ? parseFloat(String(value)) : null;
           }
           // Handle password only for new staff
           else if (key === "password" && !staffId && value) {
@@ -132,7 +157,50 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <div className="space-y-8">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Existing staff</p>
+            <h2 className="mt-1 text-xl font-semibold text-slate-900">Current team members</h2>
+          </div>
+          <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+            {isLoadingStaff ? "Loading..." : `${staffMembers.length} staff`}
+          </div>
+        </div>
+
+        {isLoadingStaff ? (
+          <div className="mt-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+            Loading staff records...
+          </div>
+        ) : staffMembers.length === 0 ? (
+          <div className="mt-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+            No staff members found yet.
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {staffMembers.map((member) => (
+              <div key={member.email || member.name} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-slate-900">{member.name || "Unnamed staff"}</p>
+                    <p className="mt-1 text-sm text-slate-500">{member.email || "No email provided"}</p>
+                  </div>
+                  <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-medium text-indigo-700">
+                    {member.role || "Staff"}
+                  </span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-slate-500">
+                  {member.position ? <span className="rounded-full bg-white px-2.5 py-1">{member.position}</span> : null}
+                  {member.department ? <span className="rounded-full bg-white px-2.5 py-1">{member.department}</span> : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-6">
       {/* Basic Information */}
       <div className="border-b border-gray-200 pb-4">
         <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
@@ -306,5 +374,6 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
         </button>
       </div>
     </form>
+    </div>
   );
 }
