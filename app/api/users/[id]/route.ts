@@ -9,11 +9,17 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized. Admin access required." }, { status: 401 });
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
+
+    // Allow ADMIN or the user themselves to update their profile
+    if (session.user.role !== "ADMIN" && session.user.id !== id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
     
     // Remove password from update (can't change password through this endpoint)
@@ -70,11 +76,16 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
+
+    // Allow ADMIN or the user themselves to fetch their profile
+    if (session.user.role !== "ADMIN" && session.user.id !== id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const { data: user, error } = await supabase
       .from("users")
       .select("*")

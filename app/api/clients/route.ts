@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Require ADMIN or LAWYER to create clients
+    // Require ADMIN, LAWYER or RECEPTIONIST to create clients
     const role = session.user?.role;
-    if (!role || !["ADMIN", "LAWYER"].includes(role)) {
+    if (!role || !["ADMIN", "LAWYER", "RECEPTIONIST"].includes(role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

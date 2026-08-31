@@ -46,6 +46,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only ADMIN or LAWYER may create cases
+    const role = session.user?.role;
+    if (!role || !["ADMIN", "LAWYER"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await request.json();
     const validatedData = caseSchema.parse(body);
 

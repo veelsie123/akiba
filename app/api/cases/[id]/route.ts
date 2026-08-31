@@ -25,10 +25,14 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only ADMIN or LAWYER may update or delete cases
+    const role = session.user?.role;
+    if (!role || !["ADMIN", "LAWYER"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { id } = await params;
     const body = await request.json();
-    
-    console.log("Updating case:", id, body);
 
     const validatedData = caseSchema.parse(body);
 
