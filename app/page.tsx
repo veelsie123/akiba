@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Scale, ShieldCheck, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -124,14 +126,16 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
-              <p className="font-medium text-slate-700">Demo credentials</p>
-              <div className="mt-2 space-y-1">
-                <p>Admin: admin@lawfirm.com / admin123</p>
-                <p>Lawyer: john.doe@lawfirm.com / lawyer123</p>
-                <p>Receptionist: reception@lawfirm.com / reception123</p>
+            {DEMO_MODE && (
+              <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                <p className="font-medium text-slate-700">Demo credentials (demo mode only)</p>
+                <div className="mt-2 space-y-1">
+                  <p>Admin: admin@lawfirm.com / admin123</p>
+                  <p>Lawyer: john.doe@lawfirm.com / lawyer123</p>
+                  <p>Receptionist: reception@lawfirm.com / reception123</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
