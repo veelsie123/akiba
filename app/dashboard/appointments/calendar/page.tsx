@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface Appointment {
@@ -15,11 +15,25 @@ interface Appointment {
 }
 
 interface CalendarViewProps {
-  appointments: Appointment[];
+  appointments?: Appointment[];
 }
 
-export default function CalendarView({ appointments }: CalendarViewProps) {
+export default function CalendarView({ appointments = [] }: CalendarViewProps) {
+  const [appointmentList, setAppointmentList] = useState<Appointment[]>(appointments);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    if (appointments.length === 0) {
+      fetch("/api/appointments")
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setAppointmentList(data);
+          }
+        })
+        .catch((err) => console.error("Error loading calendar appointments:", err));
+    }
+  }, [appointments.length]);
   
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -49,7 +63,7 @@ export default function CalendarView({ appointments }: CalendarViewProps) {
   };
   
   const getAppointmentsForDay = (day: number) => {
-    return appointments.filter(apt => {
+    return appointmentList.filter(apt => {
       const aptDate = new Date(apt.startTime);
       return aptDate.getDate() === day &&
              aptDate.getMonth() === currentDate.getMonth() &&

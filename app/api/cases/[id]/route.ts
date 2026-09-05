@@ -76,6 +76,12 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only ADMIN or LAWYER may delete cases
+    const role = session.user?.role;
+    if (!role || !["ADMIN", "LAWYER"].includes(role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { id } = await params;
 
     const { error } = await supabase.from("cases").delete().eq("id", id);

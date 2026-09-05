@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,6 +45,42 @@ export default function AppointmentForm({
   cases = [],
 }: AppointmentFormProps) {
   const router = useRouter();
+  const [lawyerList, setLawyerList] = useState(lawyers);
+  const [clientList, setClientList] = useState(clients);
+  const [caseList, setCaseList] = useState(cases);
+
+  useEffect(() => {
+    async function loadOptions() {
+      try {
+        const promises = [];
+        if (lawyers.length === 0) {
+          promises.push(
+            fetch("/api/users?role=LAWYER")
+              .then((r) => r.json())
+              .then((d) => Array.isArray(d) && setLawyerList(d))
+          );
+        }
+        if (clients.length === 0) {
+          promises.push(
+            fetch("/api/clients")
+              .then((r) => r.json())
+              .then((d) => Array.isArray(d) && setClientList(d))
+          );
+        }
+        if (cases.length === 0) {
+          promises.push(
+            fetch("/api/cases")
+              .then((r) => r.json())
+              .then((d) => Array.isArray(d) && setCaseList(d))
+          );
+        }
+        await Promise.all(promises);
+      } catch (error) {
+        console.error("Error loading appointment options:", error);
+      }
+    }
+    loadOptions();
+  }, [lawyers.length, clients.length, cases.length]);
 
   const {
     register,
@@ -64,7 +101,7 @@ export default function AppointmentForm({
   const endTimeValue = useWatch({ control, name: "endTime" }) as string | undefined;
 
   // Filter cases based on selected client
-  const filteredCases = cases.filter(case_ => case_.clientId === selectedClientId);
+  const filteredCases = caseList.filter(case_ => case_.clientId === selectedClientId);
 
   const onSubmit = async (data: AppointmentFormData) => {
     try {
@@ -140,7 +177,7 @@ export default function AppointmentForm({
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
           >
             <option value="">Select a client</option>
-            {clients.map((client) => (
+            {clientList.map((client) => (
               <option key={client.id} value={client.id}>
                 {client.name}
               </option>
@@ -158,7 +195,7 @@ export default function AppointmentForm({
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
           >
             <option value="">Select a lawyer</option>
-            {lawyers.map((lawyer) => (
+            {lawyerList.map((lawyer) => (
               <option key={lawyer.id} value={lawyer.id}>
                 {lawyer.name}
               </option>
