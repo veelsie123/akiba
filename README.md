@@ -142,16 +142,30 @@ BCRYPT_SALT_ROUNDS=6
 
 ### 4. Database & Seed Data
 
-Ensure your Supabase project contains the expected tables (`users`, `clients`, `cases`, `appointments`, `documents`, `audit_logs`, `notifications`).
+Ensure your Supabase project contains the expected tables (`users`, `clients`, `cases`, `appointments`, `documents`, `invoices`, `notifications`, and `audit_logs`).
 
-To populate your database with initial sample users, clients, and cases in development mode:
+To seed or reseed the demo data locally:
 
-1. Start the server (step 5 below).
-2. Send a `POST` request to `/api/seed` (e.g. using cURL or Postman):
+1. Set `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local`.
+2. Start the development server:
    ```bash
-   curl -X POST http://localhost:3000/api/seed
+   npm run dev
    ```
-   *(Seeding is enabled when `NEXT_PUBLIC_DEMO_MODE=true` or in non-production environments).*
+3. In a second terminal, send a `POST` request to the seed endpoint:
+   ```powershell
+   Invoke-WebRequest `
+     -Uri http://localhost:3000/api/seed `
+     -Method POST `
+     -UseBasicParsing
+   ```
+
+You can also use cURL:
+
+```bash
+curl -X POST http://localhost:3000/api/seed
+```
+
+The endpoint is idempotent for the demo users, clients, cases, and invoices, so it can be run again to restore demo records. A successful request returns `{"success":true}`. Seeding is enabled when `DEMO_MODE=true` or in non-production environments.
 
 ### 5. Run Development Server
 
