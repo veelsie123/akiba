@@ -231,9 +231,6 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
             <option value="ADMIN">Admin</option>
             <option value="LAWYER">Lawyer</option>
             <option value="RECEPTIONIST">Receptionist</option>
-            <option value="PARALEGAL">Paralegal</option>
-            <option value="ACCOUNTANT">Accountant</option>
-            <option value="HR_MANAGER">HR Manager</option>
           </select>
         </div>
 
@@ -276,8 +273,6 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
             <option value="FULL_TIME">Full Time</option>
             <option value="PART_TIME">Part Time</option>
             <option value="CONTRACT">Contract</option>
-            <option value="INTERN">Intern</option>
-            <option value="PROBATION">Probation</option>
           </select>
         </div>
 
@@ -285,11 +280,8 @@ export default function StaffForm({ staff, staffId }: StaffFormProps) {
           <label htmlFor="employmentStatus" className="block text-sm font-medium text-gray-700">Employment Status</label>
           <select id="employmentStatus" name="employmentStatus" value={formData.employmentStatus} onChange={handleChange} className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2">
             <option value="ACTIVE">Active</option>
-            <option value="ON_LEAVE">On Leave</option>
-            <option value="SUSPENDED">Suspended</option>
+            <option value="INACTIVE">Inactive</option>
             <option value="TERMINATED">Terminated</option>
-            <option value="RESIGNED">Resigned</option>
-            <option value="RETIRED">Retired</option>
           </select>
         </div>
 

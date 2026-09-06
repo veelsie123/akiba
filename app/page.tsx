@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Scale, ShieldCheck, Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 
-const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true" || process.env.NODE_ENV !== "production";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -28,12 +28,6 @@ type StaffRequestBody = {
   bankName?: string;
   employmentStatus?: "ACTIVE" | "INACTIVE" | "TERMINATED";
   employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACT";
-  specialization?: string;
-  experience?: string;
-  barNumber?: string;
-  bio?: string;
-  availability?: string;
-  notes?: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -72,12 +66,6 @@ export async function POST(request: NextRequest) {
         bankName: body.bankName || null,
         employmentStatus: body.employmentStatus || "ACTIVE",
         employmentType: body.employmentType || "FULL_TIME",
-        specialization: body.specialization || null,
-        experience: body.experience || null,
-        barNumber: body.barNumber || null,
-        bio: body.bio || null,
-        availability: body.availability || null,
-        notes: body.notes || null,
       })
       .select()
       .single();

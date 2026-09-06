@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -38,12 +38,14 @@ interface InvoiceFormProps {
 export default function InvoiceForm({ 
   initialData, 
   invoiceId, 
-  clients, 
-  cases,
-  nextInvoiceNumber 
+  clients = [],
+  cases = [],
+  nextInvoiceNumber = "INV-1001"
 }: InvoiceFormProps) {
   const router = useRouter();
   const [selectedClient, setSelectedClient] = useState<string>(initialData?.clientId || "");
+  const [availableClients, setAvailableClients] = useState(clients);
+  const [availableCases, setAvailableCases] = useState(cases);
 
   const {
     register,
@@ -52,6 +54,7 @@ export default function InvoiceForm({
     getValues,
     setValue,
     formState: { errors, isSubmitting },
+    reset,
   } = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: initialData || {
@@ -68,6 +71,52 @@ export default function InvoiceForm({
 
   const lineItems = useWatch({ control, name: "lineItems" }) || [];
   const taxRate = useWatch({ control, name: "tax" }) || 0;
+
+  useEffect(() => {
+    const loadInvoiceOptions = async () => {
+      try {
+        const [clientsResponse, casesResponse, invoicesResponse] = await Promise.all([
+          fetch("/api/clients"),
+          fetch("/api/cases"),
+          fetch("/api/billing"),
+        ]);
+        const [clientsData, casesData, invoicesData] = await Promise.all([
+          clientsResponse.json(),
+          casesResponse.json(),
+          invoicesResponse.json(),
+        ]);
+
+        if (!clientsResponse.ok) throw new Error(clientsData.error || "Failed to load clients");
+        if (!casesResponse.ok) throw new Error(casesData.error || "Failed to load cases");
+        if (!invoicesResponse.ok) throw new Error(invoicesData.error || "Failed to load invoices");
+
+        const loadedClients = Array.isArray(clientsData) ? clientsData : [];
+        const loadedCases = Array.isArray(casesData) ? casesData : [];
+        setAvailableClients(loadedClients);
+        setAvailableCases(loadedCases);
+
+        if (!initialData) {
+          const highestNumber = (Array.isArray(invoicesData) ? invoicesData : []).reduce(
+            (highest: number, invoice: { invoiceNumber?: string }) => {
+              const number = Number(invoice.invoiceNumber?.match(/\d+$/)?.[0] || 0);
+              return Math.max(highest, number);
+            },
+            1000,
+          );
+          reset({
+            invoiceNumber: `INV-${highestNumber + 1}`,
+            lineItems: [{ description: "", quantity: 1, rate: 0, amount: 0 }],
+            tax: 0,
+          });
+        }
+      } catch (error) {
+        console.error("Error loading invoice options:", error);
+        toast.error(error instanceof Error ? error.message : "Unable to load invoice options");
+      }
+    };
+
+    loadInvoiceOptions();
+  }, [initialData, reset]);
 
   // Calculate subtotal
   const subtotal = lineItems.reduce((sum, item) => {
@@ -100,8 +149,8 @@ export default function InvoiceForm({
 
   // Filter cases based on selected client
   const filteredCases = selectedClient
-    ? cases.filter(c => {
-        const client = clients.find(client => client.id === selectedClient);
+    ? availableCases.filter(c => {
+        const client = availableClients.find(client => client.id === selectedClient);
         return c.client.name === client?.name;
       })
     : [];
@@ -175,12 +224,13 @@ export default function InvoiceForm({
             {...register("clientId")}
             onChange={(e) => {
               setSelectedClient(e.target.value);
+              setValue("clientId", e.target.value, { shouldValidate: true });
               setValue("caseId", "");
             }}
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
           >
             <option value="">Select a client</option>
-            {clients.map((client) => (
+            {availableClients.map((client) => (
               <option key={client.id} value={client.id}>
                 {client.name}
               </option>
@@ -250,7 +300,6 @@ export default function InvoiceForm({
                   <input
                     type="text"
                     {...register(`lineItems.${index}.description`)}
-                    onChange={() => updateLineItemAmount(index)}
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
                   />
                 </div>
@@ -258,8 +307,7 @@ export default function InvoiceForm({
                   <label className="block text-xs font-medium text-gray-500">Quantity</label>
                   <input
                     type="number"
-                    {...register(`lineItems.${index}.quantity`, { valueAsNumber: true })}
-                    onChange={() => updateLineItemAmount(index)}
+                    {...register(`lineItems.${index}.quantity`, { valueAsNumber: true, onChange: () => updateLineItemAmount(index) })}
                     min="1"
                     step="1"
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
@@ -269,8 +317,7 @@ export default function InvoiceForm({
                   <label className="block text-xs font-medium text-gray-500">Rate (KES)</label>
                   <input
                     type="number"
-                    {...register(`lineItems.${index}.rate`, { valueAsNumber: true })}
-                    onChange={() => updateLineItemAmount(index)}
+                    {...register(`lineItems.${index}.rate`, { valueAsNumber: true, onChange: () => updateLineItemAmount(index) })}
                     min="0"
                     step="0.01"
                     className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"

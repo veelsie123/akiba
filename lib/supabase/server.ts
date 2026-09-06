@@ -19,7 +19,22 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 
 export function throwIfSupabaseError(error: unknown): asserts error is null {
   if (error) {
-    const message = error instanceof Error ? error.message : "Supabase request failed";
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    const supabaseError = error as {
+      message?: string;
+      details?: string;
+      hint?: string;
+      code?: string;
+    };
+    const context = [supabaseError.code, supabaseError.details, supabaseError.hint]
+      .filter(Boolean)
+      .join(" - ");
+    const message = supabaseError.message
+      ? `${supabaseError.message}${context ? ` (${context})` : ""}`
+      : "Supabase request failed";
     throw new Error(message);
   }
 }
