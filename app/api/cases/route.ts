@@ -77,7 +77,9 @@ export async function POST(request: NextRequest) {
           userId: validatedData.lawyerId,
       });
 
-      throwIfSupabaseError(notificationError);
+      if (notificationError) {
+        console.error("Case assignment notification could not be created:", notificationError);
+      }
     }
 
     return NextResponse.json(case_, { status: 201 });

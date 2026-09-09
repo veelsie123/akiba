@@ -1,0 +1,4 @@
+Date | Amount | Status | Method
+8/2/2026 | 500 | rejected | mobile_money
+7/28/2026 | 7000 | processing | mobile_money
+7/24/2026 | 15900 | rejected | bank_transfer

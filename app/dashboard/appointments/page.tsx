@@ -37,6 +37,19 @@ interface AppointmentFormProps {
   cases?: { id: string; caseNumber: string; title: string; clientId: string; client: { name: string } }[];
 }
 
+interface CreatedAppointment {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  startTime: string;
+  endTime: string;
+  description?: string | null;
+  client?: { name?: string } | null;
+  lawyer?: { name?: string } | null;
+  case?: { caseNumber?: string; title?: string } | null;
+}
+
 export default function AppointmentForm({ 
   initialData,
   appointmentId,
@@ -45,6 +58,7 @@ export default function AppointmentForm({
   cases = [],
 }: AppointmentFormProps) {
   const router = useRouter();
+  const [createdAppointment, setCreatedAppointment] = useState<CreatedAppointment | null>(null);
   const [lawyerList, setLawyerList] = useState(lawyers);
   const [clientList, setClientList] = useState(clients);
   const [caseList, setCaseList] = useState(cases);
@@ -133,8 +147,12 @@ export default function AppointmentForm({
       }
 
       toast.success(appointmentId ? "Appointment updated successfully" : "Appointment scheduled successfully");
-      router.push("/dashboard/appointments");
-      router.refresh();
+      if (appointmentId) {
+        router.push("/dashboard/appointments");
+        router.refresh();
+      } else {
+        setCreatedAppointment(responseData);
+      }
     } catch (error) {
       console.error("Error saving appointment:", error);
       toast.error(error instanceof Error ? error.message : "Something went wrong");
@@ -155,6 +173,7 @@ export default function AppointmentForm({
   const today = new Date().toISOString().split('T')[0];
 
   return (
+    <>
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="md:col-span-2">
@@ -368,5 +387,31 @@ export default function AppointmentForm({
         </button>
       </div>
     </form>
+    {createdAppointment ? (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="created-appointment-title">
+        <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-600">Appointment created</p>
+              <h2 id="created-appointment-title" className="mt-1 text-2xl font-semibold text-slate-900">{createdAppointment.title}</h2>
+            </div>
+            <button type="button" onClick={() => setCreatedAppointment(null)} className="text-2xl leading-none text-slate-400 hover:text-slate-700" aria-label="Close appointment summary">×</button>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div><p className="text-xs uppercase tracking-wide text-slate-500">Date and time</p><p className="mt-1 text-sm font-medium text-slate-900">{new Date(createdAppointment.startTime).toLocaleString()} - {new Date(createdAppointment.endTime).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p></div>
+            <div><p className="text-xs uppercase tracking-wide text-slate-500">Type</p><p className="mt-1 text-sm font-medium text-slate-900">{createdAppointment.type}</p></div>
+            <div><p className="text-xs uppercase tracking-wide text-slate-500">Client</p><p className="mt-1 text-sm font-medium text-slate-900">{createdAppointment.client?.name || "—"}</p></div>
+            <div><p className="text-xs uppercase tracking-wide text-slate-500">Lawyer</p><p className="mt-1 text-sm font-medium text-slate-900">{createdAppointment.lawyer?.name || "—"}</p></div>
+            <div><p className="text-xs uppercase tracking-wide text-slate-500">Status</p><p className="mt-1 text-sm font-medium text-slate-900">{createdAppointment.status}</p></div>
+            <div><p className="text-xs uppercase tracking-wide text-slate-500">Case</p><p className="mt-1 text-sm font-medium text-slate-900">{createdAppointment.case?.caseNumber || "No related case"}</p></div>
+          </div>
+          <div className="mt-6 flex justify-end gap-3">
+            <button type="button" onClick={() => setCreatedAppointment(null)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Schedule another</button>
+            <button type="button" onClick={() => router.push("/dashboard/appointments")} className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">View appointments</button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }

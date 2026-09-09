@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,8 +27,62 @@ interface CaseFormProps {
   clients?: { id: string; name: string }[];
 }
 
+interface CaseRecord {
+  id: string;
+  caseNumber: string;
+  title: string;
+  type: string;
+  status: string;
+  court?: string | null;
+  client?: { name?: string } | null;
+  assignedLawyer?: { name?: string } | null;
+}
+
 export default function CaseForm({ initialData, caseId, lawyers = [], clients = [] }: CaseFormProps) {
   const router = useRouter();
+  const [lawyerList, setLawyerList] = useState(lawyers);
+  const [clientList, setClientList] = useState(clients);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(lawyers.length === 0 || clients.length === 0);
+  const [caseList, setCaseList] = useState<CaseRecord[]>([]);
+  const [isLoadingCases, setIsLoadingCases] = useState(true);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        const requests: Promise<void>[] = [];
+        requests.push(fetch("/api/cases").then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Failed to load cases");
+          setCaseList(Array.isArray(data) ? data : []);
+        }));
+        if (lawyers.length === 0) {
+          requests.push(fetch("/api/users?role=LAWYER").then(async (response) => {
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Failed to load lawyers");
+            setLawyerList(Array.isArray(data) ? data : []);
+          }));
+        }
+        if (clients.length === 0) {
+          requests.push(fetch("/api/clients").then(async (response) => {
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Failed to load clients");
+            setClientList(Array.isArray(data) ? data : []);
+          }));
+        }
+        await Promise.all(requests);
+      } catch (error) {
+        console.error("Error loading case options:", error);
+        toast.error(error instanceof Error ? error.message : "Unable to load case options");
+      } finally {
+        setIsLoadingOptions(false);
+        setIsLoadingCases(false);
+      }
+    };
+
+    const timer = window.setTimeout(() => void loadOptions(), 0);
+    return () => window.clearTimeout(timer);
+  }, [lawyers.length, clients.length]);
+
   const {
     register,
     handleSubmit,
@@ -41,8 +96,6 @@ export default function CaseForm({ initialData, caseId, lawyers = [], clients = 
 
   const onSubmit = async (data: CaseFormData) => {
     try {
-      console.log("Submitting data:", data); // Debug log
-      
       const url = caseId ? `/api/cases/${caseId}` : "/api/cases";
       const method = caseId ? "PUT" : "POST";
 
@@ -54,25 +107,10 @@ export default function CaseForm({ initialData, caseId, lawyers = [], clients = 
         body: JSON.stringify(data),
       });
 
-      // Try to get the error message from response
-      let errorMessage = "Failed to save case";
-      try {
-        const responseData = await response.json();
-        console.log("Response data:", responseData); // Debug log
-        if (responseData.error) {
-          errorMessage = typeof responseData.error === 'string' 
-            ? responseData.error 
-            : JSON.stringify(responseData.error);
-        }
-      } catch {
-        // If response is not JSON, get text
-        const text = await response.text();
-        console.log("Response text:", text);
-        errorMessage = text || errorMessage;
-      }
+      const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(errorMessage);
+        throw new Error(typeof responseData.error === "string" ? responseData.error : JSON.stringify(responseData.error || "Failed to save case"));
       }
 
       toast.success(caseId ? "Case updated successfully" : "Case created successfully");
@@ -85,7 +123,44 @@ export default function CaseForm({ initialData, caseId, lawyers = [], clients = 
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="space-y-8">
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-indigo-600">Matter register</p>
+          <h2 className="mt-1 text-xl font-semibold text-slate-900">Current cases</h2>
+        </div>
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+          {isLoadingCases ? "Loading..." : `${caseList.length} case${caseList.length === 1 ? "" : "s"}`}
+        </span>
+      </div>
+      {isLoadingCases ? (
+        <p className="mt-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">Loading cases...</p>
+      ) : caseList.length === 0 ? (
+        <p className="mt-6 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">No cases have been created yet.</p>
+      ) : (
+        <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {caseList.map((case_) => (
+            <div key={case_.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">{case_.caseNumber}</p>
+                  <h3 className="mt-1 font-semibold text-slate-900">{case_.title}</h3>
+                </div>
+                <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-slate-600">{case_.status}</span>
+              </div>
+              <div className="mt-4 space-y-1 text-sm text-slate-500">
+                <p>{case_.type}{case_.court ? ` · ${case_.court}` : ""}</p>
+                <p>Client: {case_.client?.name || "Unassigned"}</p>
+                <p>Lawyer: {case_.assignedLawyer?.name || "Unassigned"}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700">Case Number</label>
@@ -140,7 +215,7 @@ export default function CaseForm({ initialData, caseId, lawyers = [], clients = 
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
           >
             <option value="">Select a client</option>
-            {clients.map((client) => (
+            {clientList.map((client) => (
               <option key={client.id} value={client.id}>
                 {client.name}
               </option>
@@ -158,7 +233,7 @@ export default function CaseForm({ initialData, caseId, lawyers = [], clients = 
             className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
           >
             <option value="">Select a lawyer</option>
-            {lawyers.map((lawyer) => (
+            {lawyerList.map((lawyer) => (
               <option key={lawyer.id} value={lawyer.id}>
                 {lawyer.name}
               </option>
@@ -198,12 +273,13 @@ export default function CaseForm({ initialData, caseId, lawyers = [], clients = 
         </button>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isLoadingOptions}
           className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {isSubmitting ? "Saving..." : caseId ? "Update Case" : "Create Case"}
+          {isLoadingOptions ? "Loading options..." : isSubmitting ? "Saving..." : caseId ? "Update Case" : "Create Case"}
         </button>
       </div>
     </form>
+    </div>
   );
 }

@@ -75,11 +75,24 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { notificationId } = body;
+    const { notificationId, markAll } = body;
 
-    const { data: notification, error } = await supabase
+    const query = supabase
       .from("notifications")
       .update({ read: true })
+      .eq("userId", session.user.id);
+
+    if (markAll) {
+      const { error } = await query.eq("read", false);
+      throwIfSupabaseError(error);
+      return NextResponse.json({ success: true });
+    }
+
+    if (!notificationId) {
+      return NextResponse.json({ error: "notificationId is required" }, { status: 400 });
+    }
+
+    const { data: notification, error } = await query
       .eq("id", notificationId)
       .select()
       .single();
